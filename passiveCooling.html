@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bio-inspired passive cooling: panel model</title>
+<style>
+:root{--bg:#F3F6F4;--card:#FFFFFF;--ink:#16211D;--mute:#55635D;--line:#D5DED9;--heat:#C2432F;--water:#2F7D6B;--air:#B8811A;--pv:#1F3A5F;--sink:#D9705C;--wick:#7FB8A6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1613;--card:#18211D;--ink:#E9F0EC;--mute:#9DB0A7;--line:#2B3A34;--heat:#F0806B;--water:#58C2A8;--air:#E3A93B;--pv:#5B86BD;--sink:#E08470;--wick:#4E8E7D}}
+:root[data-theme="dark"]{--bg:#0F1613;--card:#18211D;--ink:#E9F0EC;--mute:#9DB0A7;--line:#2B3A34;--heat:#F0806B;--water:#58C2A8;--air:#E3A93B;--pv:#5B86BD;--sink:#E08470;--wick:#4E8E7D}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:28px 20px 40px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 8px}
+.lead{color:var(--mute);max-width:62ch;margin:0 0 24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+h2{font:700 18px/1.3 Georgia,serif;margin:0 0 12px}
+svg{width:100%;height:auto;display:block}
+.ctl{margin:0 0 14px}
+.ctl label{display:flex;justify-content:space-between;font-size:15px;margin-bottom:4px}
+.ctl output{font-weight:600;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--water)}
+.tg{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.tg button{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 14px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}
+.tg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--air);outline-offset:2px}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.res div{background:var(--bg);border-radius:10px;padding:10px 12px}
+.res b{display:block;font:700 26px/1.1 Georgia,serif;font-variant-numeric:tabular-nums}
+.res span{font-size:13px;color:var(--mute)}
+.bars{margin-top:14px}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:14px}
+.bar i{display:block;height:14px;border-radius:7px;transition:width .25s}
+.bar em{font-style:normal;min-width:130px;color:var(--mute)}
+.note{font-size:13px;color:var(--mute);margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.flow{stroke-dasharray:6 6;animation:f 1s linear infinite}
+@keyframes f{to{stroke-dashoffset:-12}}
+@media(prefers-reduced-motion:reduce){.flow{animation:none}}
+text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+</style>
+</head>
+<body>
+<main>
+<h1>Bio-inspired panel: cross-section model</h1>
+<p class="lead">Change the weather and switch layers on or off to see how the coral spreader, moss wick and termite chimneys change cell temperature, power and water use.</p>
+<div class="grid">
+  <section class="panel" aria-label="Panel cross-section">
+    <h2>Panel cross-section</h2>
+    <svg viewBox="0 0 380 372" role="img" aria-label="Realistic cross-section: glass and silicon PV cells, thermal interface, coral-like metal heat sink, porous moss-like wick with water droplets, shaded plenum and clay termite-style chimneys">
+      <defs>
+        <radialGradient id="sunG"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".45" stop-color="#F6B93B"/><stop offset="1" stop-color="#F6B93B" stop-opacity="0"/></radialGradient>
+        <linearGradient id="cellG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B4F86"/><stop offset=".5" stop-color="#16294A"/><stop offset="1" stop-color="#22406F"/></linearGradient>
+        <linearGradient id="glassG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF6FF" stop-opacity=".95"/><stop offset="1" stop-color="#9CC7E6" stop-opacity=".55"/></linearGradient>
+        <linearGradient id="pasteG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9BEC2"/><stop offset="1" stop-color="#7D848A"/></linearGradient>
+        <linearGradient id="metalG" gradientUnits="userSpaceOnUse" x1="0" y1="106" x2="0" y2="166"><stop offset="0" stop-color="#F3A48F"/><stop offset=".5" stop-color="#D9705C"/><stop offset="1" stop-color="#A9432F"/></linearGradient>
+        <linearGradient id="plateG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7B5A2"/><stop offset="1" stop-color="#C4573F"/></linearGradient>
+        <linearGradient id="wickG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FA487"/><stop offset="1" stop-color="#3F6F58"/></linearGradient>
+        <linearGradient id="plenG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B2622" stop-opacity=".55"/><stop offset="1" stop-color="#1B2622" stop-opacity=".12"/></linearGradient>
+        <linearGradient id="clayG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7A4E30"/><stop offset=".35" stop-color="#C58F5E"/><stop offset=".7" stop-color="#A06B42"/><stop offset="1" stop-color="#6A4128"/></linearGradient>
+        <radialGradient id="dropG" cx=".35" cy=".3"><stop offset="0" stop-color="#F2FFFB"/><stop offset=".5" stop-color="#7FD9F0"/><stop offset="1" stop-color="#2A8FB5"/></radialGradient>
+        <filter id="noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" seed="4"/><feColorMatrix values="0 0 0 0 .05  0 0 0 0 .18  0 0 0 0 .1  0 0 0 1.6 -.55"/></filter>
+        <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".5" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .1  0 0 0 0 .05  0 0 0 1.4 -.45"/></filter>
+        <filter id="sh" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".35"/></filter>
+        <clipPath id="wickClip"><rect x="20" y="166" width="340" height="40"/></clipPath>
+        <clipPath id="tubeL"><rect x="60" y="256" width="46" height="74"/></clipPath>
+        <clipPath id="tubeR"><rect x="274" y="256" width="46" height="74"/></clipPath>
+      </defs>
+      <g id="sun">
+        <circle cx="190" cy="14" r="34" fill="url(#sunG)"/>
+        <circle cx="190" cy="14" r="10" fill="#FFF3B0"/>
+      </g>
+      <g filter="url(#sh)">
+        <rect x="20" y="52" width="340" height="8" fill="url(#glassG)"/>
+        <rect x="20" y="60" width="340" height="32" fill="url(#cellG)"/>
+        <g stroke="#0B1730" stroke-width="1.5"><line x1="105" y1="60" x2="105" y2="92"/><line x1="190" y1="60" x2="190" y2="92"/><line x1="275" y1="60" x2="275" y2="92"/></g>
+        <g stroke="#C9D3DE" stroke-width=".8" opacity=".8"><line x1="20" y1="76" x2="360" y2="76"/><line x1="62" y1="60" x2="62" y2="92"/><line x1="148" y1="60" x2="148" y2="92"/><line x1="232" y1="60" x2="232" y2="92"/><line x1="318" y1="60" x2="318" y2="92"/></g>
+        <path d="M20 60L110 60L60 92L20 92Z" fill="#fff" opacity=".08"/>
+        <rect x="20" y="92" width="340" height="14" fill="url(#pasteG)"/>
+      </g>
+      <text x="32" y="82" fill="#fff" font-size="13" font-weight="600" style="stroke:#0B1730;stroke-width:3px;paint-order:stroke">PV cells under glass</text>
+      <text x="300" y="103" fill="#fff" font-size="10" style="stroke:#555d63;stroke-width:3px;paint-order:stroke">Interface</text>
+      <g id="L-sink">
+        <rect x="20" y="106" width="340" height="10" fill="url(#plateG)"/>
+        <g stroke="url(#metalG)" stroke-linecap="round" fill="none" filter="url(#sh)">
+          <path stroke-width="5" d="M190 116V140M190 140L140 160M190 140L240 160M190 140V164"/>
+          <path stroke-width="3.5" d="M190 128L100 150M190 128L280 150M140 160L120 165M240 160L260 165"/>
+          <path stroke-width="3" d="M60 116L60 130M60 130L40 148M60 130L80 148M320 116L320 130M320 130L300 148M320 130L340 148"/>
+        </g>
+        <text x="32" y="130" font-size="13" font-weight="600" fill="var(--ink)" style="stroke:var(--card);stroke-width:3px;paint-order:stroke">Coral-like heat sink</text>
+      </g>
+      <g id="L-wick">
+        <rect x="20" y="166" width="340" height="40" fill="url(#wickG)"/>
+        <rect x="20" y="166" width="340" height="40" filter="url(#noise)" opacity=".9"/>
+        <g clip-path="url(#wickClip)">
+          <g id="drops"><circle cx="58" cy="190" r="5" fill="url(#dropG)"/><circle cx="104" cy="196" r="4" fill="url(#dropG)"/><circle cx="146" cy="188" r="5.5" fill="url(#dropG)"/><circle cx="196" cy="197" r="4.5" fill="url(#dropG)"/><circle cx="244" cy="189" r="5" fill="url(#dropG)"/><circle cx="292" cy="196" r="4" fill="url(#dropG)"/><circle cx="334" cy="190" r="5" fill="url(#dropG)"/></g>
+        </g>
+        <text x="32" y="183" font-size="13" font-weight="600" fill="#fff" style="stroke:#28483A;stroke-width:3px;paint-order:stroke">Porous moss-like wick</text>
+      </g>
+      <rect x="20" y="206" width="340" height="50" fill="url(#plenG)"/>
+      <text x="32" y="229" font-size="13" font-weight="600" fill="#fff" style="stroke:#1B2622;stroke-width:3px;paint-order:stroke">Shaded plenum</text>
+      <g id="L-chim">
+        <g clip-path="url(#tubeL)"><rect x="60" y="256" width="46" height="74" fill="url(#clayG)"/><rect x="60" y="256" width="46" height="74" filter="url(#grain)"/></g>
+        <g clip-path="url(#tubeR)"><rect x="274" y="256" width="46" height="74" fill="url(#clayG)"/><rect x="274" y="256" width="46" height="74" filter="url(#grain)"/></g>
+        <ellipse cx="83" cy="256" rx="23" ry="5" fill="#2A1B12"/><ellipse cx="297" cy="256" rx="23" ry="5" fill="#2A1B12"/>
+        <text x="120" y="296" font-size="13" font-weight="600" fill="var(--ink)" style="stroke:var(--card);stroke-width:3px;paint-order:stroke">Termite-style</text>
+        <text x="120" y="313" font-size="13" font-weight="600" fill="var(--ink)" style="stroke:var(--card);stroke-width:3px;paint-order:stroke">clay chimneys</text>
+      </g>
+      <path d="M12 300V186H20" fill="none" stroke="#2A8FB5" stroke-width="2" stroke-dasharray="3 4"/>
+      <text x="8" y="352" font-size="11" fill="var(--mute)">Condensate return (not modeled)</text>
+      <g id="F-heat" stroke="#FF6B4A" stroke-width="3" stroke-linecap="round"><line class="flow" x1="90" y1="64" x2="90" y2="100"/><line class="flow" x1="190" y1="64" x2="190" y2="100"/><line class="flow" x1="290" y1="64" x2="290" y2="100"/></g>
+      <g id="F-water" stroke="#7FD9F0" stroke-width="3" stroke-linecap="round"><line class="flow" x1="120" y1="204" x2="120" y2="240"/><line class="flow" x1="190" y1="204" x2="190" y2="240"/><line class="flow" x1="250" y1="204" x2="250" y2="240"/></g>
+      <g id="F-air" stroke="#FFD27A" stroke-width="4" stroke-linecap="round"><line class="flow" x1="83" y1="326" x2="83" y2="262"/><line class="flow" x1="297" y1="326" x2="297" y2="262"/></g>
+    </svg>
+    <div class="tg" role="group" aria-label="Layers">
+      <button id="b-sink" aria-pressed="true">Coral spreader</button>
+      <button id="b-wick" aria-pressed="true">Moss wick</button>
+      <button id="b-chim" aria-pressed="true">Termite chimneys</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Conditions and results">
+    <h2>Conditions</h2>
+    <div class="ctl"><label for="G">Sunlight <output id="oG"></output></label><input id="G" type="range" min="200" max="1000" step="50" value="1000"></div>
+    <div class="ctl"><label for="Ta">Air temperature <output id="oTa"></output></label><input id="Ta" type="range" min="10" max="45" step="1" value="35"></div>
+    <div class="ctl"><label for="W">Wind <output id="oW"></output></label><input id="W" type="range" min="0" max="5" step="0.5" value="1"></div>
+    <div class="ctl"><label for="RH">Humidity <output id="oRH"></output></label><input id="RH" type="range" min="10" max="90" step="5" value="30"></div>
+    <h2>Estimated result</h2>
+    <div class="res">
+      <div><b id="rT"></b><span>Cell temperature</span></div>
+      <div><b id="rD"></b><span>vs. plain panel</span></div>
+      <div><b id="rP"></b><span>Power change</span></div>
+      <div><b id="rW"></b><span>Water use per m² per hour</span></div>
+    </div>
+    <div class="bars" aria-hidden="true">
+      <div class="bar"><em>Plain panel</em><i id="bB" style="background:var(--mute)"></i><span id="tB"></span></div>
+      <div class="bar"><em>This design</em><i id="bN" style="background:var(--water)"></i><span id="tN"></span></div>
+    </div>
+    <p class="note">Simplified steady-state estimate for illustration, with assumed coefficients. It is not validated data; the deck's test plan (CFD, infrared thermography, matched 1-sun articles) is what would confirm any of these numbers. Condensate return is not modeled.</p>
+  </section>
+</div>
+</main>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var on={sink:true,wick:true,chim:true};
+  function calc(){
+    var G=+$('G').value,Ta=+$('Ta').value,w=+$('W').value,RH=+$('RH').value/100;
+    var U0=24+8*w, heat=0.85*G;
+    var U=U0*(on.sink?1.08:1)+(on.chim?5:0);
+    var evap=on.wick?260*(1-RH)*Math.min(1,G/600):0;
+    var T=Math.max(Ta,Ta+(heat-evap)/U);
+    var Tb=Ta+heat/U0;
+    var eta=function(t){return 0.20*(1-0.004*(t-25))};
+    var gain=(eta(T)/eta(Tb)-1)*100;
+    var water=evap*3600/2.4e6;
+    $('oG').textContent=G+' W/m²';$('oTa').textContent=Ta+' °C';$('oW').textContent=w+' m/s';$('oRH').textContent=Math.round(RH*100)+'%';
+    $('rT').textContent=T.toFixed(1)+' °C';
+    $('rD').textContent=(T-Tb<=0?'':'+')+(T-Tb).toFixed(1)+' °C';
+    $('rP').textContent=(gain>=0?'+':'')+gain.toFixed(1)+'%';
+    $('rW').textContent=water.toFixed(2)+' L';
+    var mx=90;
+    $('bB').style.width=(Tb/mx*60)+'%';$('bN').style.width=(T/mx*60)+'%';
+    $('tB').textContent=Tb.toFixed(1)+' °C';$('tN').textContent=T.toFixed(1)+' °C';
+    var op=function(id,v){$(id).style.opacity=Math.max(0,Math.min(1,v)).toFixed(2)};
+    op('F-heat',on.sink?0.35+0.65*G/1000:0.25*G/1000);
+    op('F-water',on.wick?evap/260+0.1:0);
+    op('F-air',on.chim?Math.max(0.2,(T-Ta)/25):0);
+    op('L-sink',on.sink?1:0.25);op('L-wick',on.wick?1:0.25);op('L-chim',on.chim?1:0.25);
+  }
+  ['G','Ta','W','RH'].forEach(function(i){$(i).addEventListener('input',calc)});
+  ['sink','wick','chim'].forEach(function(k){
+    $('b-'+k).addEventListener('click',function(e){on[k]=!on[k];e.currentTarget.setAttribute('aria-pressed',on[k]);calc()});
+  });
+  calc();
+})();
+</script>
+</body>
+</html>
